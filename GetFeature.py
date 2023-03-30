@@ -75,4 +75,3 @@ def cal_dis_vec(a: dict, b: dict) -> tuple:
     elif x == 0 and y < 0:
         y = -y
     return (x, y)
-
