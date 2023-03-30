@@ -14,15 +14,16 @@ def get_feature(matrix: list):
             vec_arr.append({"vec": get_zigzag(matrix[i][j]), "x": i, "y": j})
     vec_arr.sort(key=cmp)
 
-    res={}
+    res = {}
     for i in range(len(vec_arr))[1:]:
-        dis_vec=cal_dis_vec(vec_arr[i-1],vec_arr[i])
+        dis_vec = cal_dis_vec(vec_arr[i - 1], vec_arr[i])
         if not res.__contains__(dis_vec):
-            res[dis_vec]=set([(vec_arr[i],vec_arr[i-1])])
+            res[dis_vec] = {(vec_arr[i], vec_arr[i - 1])}
         else:
-            res[dis_vec].add((vec_arr[i],vec_arr[i-1]))
+            res[dis_vec].add((vec_arr[i], vec_arr[i - 1]))
 
     return res
+
 
 def get_zigzag(matrix: np.ndarray) -> list:
     """
@@ -74,4 +75,4 @@ def cal_dis_vec(a: dict, b: dict) -> tuple:
         y = -y
     elif x == 0 and y < 0:
         y = -y
-    return (x, y)
+    return x, y
