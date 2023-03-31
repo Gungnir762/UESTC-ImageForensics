@@ -13,9 +13,12 @@ def get_feature(matrix: np.ndarray):
             vec_arr.append({"vec": get_zigzag(matrix[i][j]), "x": i, "y": j})
     vec_arr.sort(key=cmp)
 
+    min_dis=pow(n**2+m**2,0.5)/10
     res = {}
     for i in range(len(vec_arr))[1:]:
         dis_vec = cal_dis_vec(vec_arr[i - 1], vec_arr[i])
+        if cal_module(dis_vec)<min_dis:
+            continue
         if not res.__contains__(dis_vec):
             k = ((vec_arr[i]["x"], vec_arr[i]["y"]), (vec_arr[i - 1]["x"], vec_arr[i - 1]["y"]))
             s = set([k])
@@ -77,3 +80,7 @@ def cal_dis_vec(a: dict, b: dict) -> tuple:
     elif x == 0 and y < 0:
         y = -y
     return (x, y)
+
+# 计算向量的模
+def cal_module(vec: tuple) -> float:
+    return pow(vec[0] ** 2 + vec[1] ** 2, 0.5)
