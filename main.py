@@ -56,7 +56,7 @@ def get_dct_block(img_block: np.ndarray) -> np.ndarray:
 
 
 if __name__ == '__main__':
-    image_path = './data/040_F.png'
+    image_path = './data/120_F.png'
     # 按灰度值读取
     img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 
@@ -81,23 +81,18 @@ if __name__ == '__main__':
             f.write(str(i) + ' ' + str(len(block_list[i])) + '\n')
 
     # 输出测试
-    arr = []
-    tmp = []
-    for i in range(y):
-        tmp.append(0)
-    for i in range(x):
-        arr.append(tmp.copy())
+    img_copy=img.copy()
     for i in block_list:
-        if len(block_list[i])<80 :
+        if len(block_list[i])<48 :
             continue
         for j in block_list[i]:
-            arr[j[0][0]][j[0][1]] += 1
-            arr[j[1][0]][j[1][1]] += 1
-    for i in range(x):
-        for j in range(y):
-            if arr[i][j]==0:
-                arr[i][j]=' '
-            else:
-                arr[i][j]='#'
-    for i in range(x):
-        print(arr[i])
+            for k in range(2):
+                x=j[k][0]
+                y=j[k][1]
+                for ii in range(8):
+                    for jj in range(8):
+                        img_copy[8*x+ii][8*y+jj]=0
+
+    cv2.namedWindow("Image")
+    cv2.imshow("Image",img_copy)
+    cv2.waitKey(0)
