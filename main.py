@@ -139,6 +139,7 @@ if __name__ == '__main__':
     # 输出测试
     img_mask = get_img_mask(img, relative_block_list, 60)
 
+    tmp = np.hstack((img, img_mask))
     cv2.namedWindow("Image")
-    cv2.imshow("Image", img_mask)
+    cv2.imshow("Image", tmp)
     cv2.waitKey(0)
