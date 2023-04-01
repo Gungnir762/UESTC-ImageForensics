@@ -2,12 +2,13 @@ import random
 import numpy as np
 
 
-def get_feature(matrix: np.ndarray,Q1:float,Q2:float):
+def get_feature(matrix: np.ndarray, Q1: float, Q2: float):
     """
     :param matrix:
     :param Q1: Q1取[0,1]，代表两个copy-move图像间的最小距离，Q1取0代表距离最小为0，取1代表距离为整个图像的对角线，一般取0.2
     :param Q2: Q2取(0,1]，代表位移向量的放缩程度，取1代表不放缩，取值越小代表位移向量放缩的系数越小。位移向量放缩后取整，相同的视为一组。一般取0.3~0.5
-    :return:
+    :return:{(x,y):(((x11,y11),(x12,y12)),((x21,y21),(x22,y22)),...),...}
+            key (x,y)为位移向量,value (x11,y11),(x12,y12)为相同位移向量的块在原矩阵中的坐标,每两个块为一组
     """
     vec_arr = []
     n, m = matrix.shape[:2]
@@ -24,10 +25,10 @@ def get_feature(matrix: np.ndarray,Q1:float,Q2:float):
         dis_vec = cal_dis_vec(vec_arr[i - 1], vec_arr[i])
         if cal_module(dis_vec) < min_dis:
             continue
-        dis_vec=shrink_vec(dis_vec,Q2)
+        dis_vec = shrink_vec(dis_vec, Q2)
         if not res.__contains__(dis_vec):
             k = ((vec_arr[i]["x"], vec_arr[i]["y"]), (vec_arr[i - 1]["x"], vec_arr[i - 1]["y"]))
-            s = set([k])
+            s = {k}
             res[dis_vec] = s
         else:
             res[dis_vec].add(((vec_arr[i]["x"], vec_arr[i]["y"]), (vec_arr[i - 1]["x"], vec_arr[i - 1]["y"])))
@@ -80,12 +81,13 @@ def cmp(a: dict) -> list:
 def cal_dis_vec(a: dict, b: dict) -> tuple:
     x = a["x"] - b["x"]
     y = a["y"] - b["y"]
-    return (x, y)
+    return x, y
 
 
 # 计算向量的模
 def cal_module(vec: tuple) -> float:
     return pow(vec[0] ** 2 + vec[1] ** 2, 0.5)
+
 
 # 放缩向量
 def shrink_vec(vec: tuple, Q: float) -> tuple:
