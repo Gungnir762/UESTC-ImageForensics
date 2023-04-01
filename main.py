@@ -75,14 +75,12 @@ if __name__ == '__main__':
                     block_dct_int[xi][yi][zi][wi] = int(block_dct[xi][yi][zi][wi] * Q)
     print(type(block_dct_int[0][0][0][0]))
 
-    # print(get_dct_matrix(img_block[63][63]))
-    # print(block_dct[63][63])
-
-    block_list = get_feature(block_dct_int,5,0.33)
+    block_list = get_feature(block_dct_int,0.2,0.33)
     with open('./tmp.csv', 'w') as f:
         for i in block_list:
             f.write(str(i) + ' ' + str(len(block_list[i])) + '\n')
 
+    # 输出测试
     arr = []
     tmp = []
     for i in range(y):

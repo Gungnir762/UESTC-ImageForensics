@@ -1,11 +1,12 @@
 import random
-
 import numpy as np
 
 
 def get_feature(matrix: np.ndarray,Q1:float,Q2:float):
     """
-    :param matrix:由8*8的DCT变换后的小矩阵组成的二维数组
+    :param matrix:
+    :param Q1: Q1取[0,1]，代表两个copy-move图像间的最小距离，Q1取0代表距离最小为0，取1代表距离为整个图像的对角线，一般取0.2
+    :param Q2: Q2取(0,1]，代表位移向量的放缩程度，取1代表不放缩，取值越小代表位移向量放缩的系数越小。位移向量放缩后取整，相同的视为一组。一般取0.3~0.5
     :return:
     """
     vec_arr = []
@@ -17,7 +18,7 @@ def get_feature(matrix: np.ndarray,Q1:float,Q2:float):
     # for i in vec_arr:
     #     print(i["vec"])
 
-    min_dis = pow(n ** 2 + m ** 2, 0.5) / Q1
+    min_dis = pow(n ** 2 + m ** 2, 0.5) * Q1
     res = {}
     for i in range(len(vec_arr))[1:]:
         dis_vec = cal_dis_vec(vec_arr[i - 1], vec_arr[i])
