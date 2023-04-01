@@ -56,16 +56,50 @@ def get_dct_block(img_block: np.ndarray) -> np.ndarray:
 
 
 if __name__ == '__main__':
-    image_path = './data/001_F.png'
+    image_path = './data/074_F.png'
     # 按灰度值读取
     img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 
     img_block = divide2block(img)
     block_dct = get_dct_block(img_block)
+
+    # 简单DCT量化
+    x, y = block_dct.shape
+    z, w = block_dct[0][0].shape
+    block_dct_int=np.empty((x,y,z,w),dtype=int,order='C')
+    Q = 5  # Q越大越精确
+    for xi in range(x):
+        for yi in range(y):
+            for zi in range(z):
+                for wi in range(w):
+                    block_dct_int[xi][yi][zi][wi] = int(block_dct[xi][yi][zi][wi] * Q)
+    print(type(block_dct_int[0][0][0][0]))
+
     # print(get_dct_matrix(img_block[63][63]))
     # print(block_dct[63][63])
 
-    block_list = get_feature(block_dct)
+    block_list = get_feature(block_dct_int,5,0.33)
     with open('./tmp.csv', 'w') as f:
         for i in block_list:
-            f.write(str(i) + '\n')
+            f.write(str(i) + ' ' + str(len(block_list[i])) + '\n')
+
+    arr = []
+    tmp = []
+    for i in range(y):
+        tmp.append(0)
+    for i in range(x):
+        arr.append(tmp.copy())
+    for i in block_list:
+        if len(block_list[i])<19 :
+            continue
+        for j in block_list[i]:
+            arr[j[0][0]][j[0][1]] += 1
+            arr[j[1][0]][j[1][1]] += 1
+    for i in range(x):
+        for j in range(y):
+            if arr[i][j]==0:
+                arr[i][j]=' '
+            else:
+                arr[i][j]='#'
+    for i in range(x):
+        print(arr[i])

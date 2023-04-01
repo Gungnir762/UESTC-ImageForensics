@@ -1,7 +1,9 @@
+import random
+
 import numpy as np
 
 
-def get_feature(matrix: np.ndarray):
+def get_feature(matrix: np.ndarray,Q1:float,Q2:float):
     """
     :param matrix:由8*8的DCT变换后的小矩阵组成的二维数组
     :return:
@@ -12,13 +14,16 @@ def get_feature(matrix: np.ndarray):
         for j in range(m):
             vec_arr.append({"vec": get_zigzag(matrix[i][j]), "x": i, "y": j})
     vec_arr.sort(key=cmp)
+    # for i in vec_arr:
+    #     print(i["vec"])
 
-    min_dis=pow(n**2+m**2,0.5)/10
+    min_dis = pow(n ** 2 + m ** 2, 0.5) / Q1
     res = {}
     for i in range(len(vec_arr))[1:]:
         dis_vec = cal_dis_vec(vec_arr[i - 1], vec_arr[i])
-        if cal_module(dis_vec)<min_dis:
+        if cal_module(dis_vec) < min_dis:
             continue
+        dis_vec=shrink_vec(dis_vec,Q2)
         if not res.__contains__(dis_vec):
             k = ((vec_arr[i]["x"], vec_arr[i]["y"]), (vec_arr[i - 1]["x"], vec_arr[i - 1]["y"]))
             s = set([k])
@@ -81,6 +86,11 @@ def cal_dis_vec(a: dict, b: dict) -> tuple:
         y = -y
     return (x, y)
 
+
 # 计算向量的模
 def cal_module(vec: tuple) -> float:
     return pow(vec[0] ** 2 + vec[1] ** 2, 0.5)
+
+# 放缩向量
+def shrink_vec(vec: tuple, Q: float) -> tuple:
+    return (int(vec[0] * Q), int(vec[1] * Q))
