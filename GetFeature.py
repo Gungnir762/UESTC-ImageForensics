@@ -80,11 +80,6 @@ def cmp(a: dict) -> list:
 def cal_dis_vec(a: dict, b: dict) -> tuple:
     x = a["x"] - b["x"]
     y = a["y"] - b["y"]
-    if x < 0:
-        x = -x
-        y = -y
-    elif x == 0 and y < 0:
-        y = -y
     return (x, y)
 
 
@@ -94,4 +89,11 @@ def cal_module(vec: tuple) -> float:
 
 # 放缩向量
 def shrink_vec(vec: tuple, Q: float) -> tuple:
-    return (int(vec[0] * Q), int(vec[1] * Q))
+    x=int(vec[0] * Q)
+    y=int(vec[1] * Q)
+    if x < 0:
+        x = -x
+        y = -y
+    elif x == 0 and y < 0:
+        y = -y
+    return (x, y)
