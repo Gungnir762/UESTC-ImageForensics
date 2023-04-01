@@ -56,7 +56,7 @@ def get_dct_block(img_block: np.ndarray) -> np.ndarray:
 
 
 if __name__ == '__main__':
-    image_path = './data/074_F.png'
+    image_path = './data/015_F.png'
     # 按灰度值读取
     img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 
@@ -73,9 +73,9 @@ if __name__ == '__main__':
             for zi in range(z):
                 for wi in range(w):
                     block_dct_int[xi][yi][zi][wi] = int(block_dct[xi][yi][zi][wi] * Q)
-    print(type(block_dct_int[0][0][0][0]))
 
-    block_list = get_feature(block_dct_int,0.2,0.33)
+
+    block_list = get_feature(block_dct_int,0.2,0.2)
     with open('./tmp.csv', 'w') as f:
         for i in block_list:
             f.write(str(i) + ' ' + str(len(block_list[i])) + '\n')
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     for i in range(x):
         arr.append(tmp.copy())
     for i in block_list:
-        if len(block_list[i])<19 :
+        if len(block_list[i])<47 :
             continue
         for j in block_list[i]:
             arr[j[0][0]][j[0][1]] += 1
