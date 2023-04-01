@@ -103,6 +103,28 @@ def get_binary_img(dct_block: np.ndarray, relative_block_list) -> np.ndarray:
     return binary_img
 
 
+# 得到相似部分为黑块遮蔽的图像
+def get_img_mask(img, relative_block_list, threshold=48):
+    """
+    :param img: 原图像
+    :param relative_block_list: get_feature的返回值
+    :param threshold: 特征向量数量阈值
+    :return: 遮蔽后的图像
+    """
+    img_mask = img.copy()
+    for i in relative_block_list:
+        if len(relative_block_list[i]) < threshold:
+            continue
+        for j in relative_block_list[i]:
+            for k in range(2):
+                x = j[k][0]
+                y = j[k][1]
+                for ii in range(8):
+                    for jj in range(8):
+                        img_mask[8 * x + ii][8 * y + jj] = 0
+    return img_mask
+
+
 if __name__ == '__main__':
     image_path = './data/015_F.png'
     # 按灰度值读取
@@ -114,58 +136,9 @@ if __name__ == '__main__':
 
     relative_block_list = get_feature(quantified_block, 0.2, 0.2)
 
-    # binary_img = get_binary_img(quantified_block, relative_block_list)
-    # print(binary_img)
-    # print(binary_img.shape)
-    # print(binary_img[0][0].shape)
-
-    # cv2.imshow("wname", binary_img)
-    # cv2.waitKey(10000)
-    # cv2.destroyAllWindows()
-
-    # with open('tmps/tmp.csv', 'w') as f:
-    #     for i in relative_block_list:
-    #         f.write(str(i) + ' ' + str(len(relative_block_list[i])) + '\n')
-
-    # # 输出测试
-    # x, y = dct_block.shape
-    # z, w = dct_block[0][0].shape
-    # output_arr = []
-    # tmp = []
-    # for i in range(y):
-    #     tmp.append(0)
-    # for i in range(x):
-    #     output_arr.append(tmp.copy())
-    # for i in relative_block_list:
-    #     if len(relative_block_list[i]) < 47:
-    #         continue
-    #     for j in relative_block_list[i]:
-    #         output_arr[j[0][0]][j[0][1]] += 1
-    #         output_arr[j[1][0]][j[1][1]] += 1
-    # for i in range(x):
-    #     for j in range(y):
-    #         if output_arr[i][j] == 0:
-    #             output_arr[i][j] = ' '
-    #         else:
-    #             output_arr[i][j] = '#'
-    #
-    # with open('tmps/result.txt', 'w') as f:
-    #     for i in range(x):
-    #         print(output_arr[i])
-    #         f.write(str(output_arr[i]) + '\n')
     # 输出测试
-    img_copy = img.copy()
-    for i in relative_block_list:
-        if len(relative_block_list[i]) < 48:
-            continue
-        for j in relative_block_list[i]:
-            for k in range(2):
-                x = j[k][0]
-                y = j[k][1]
-                for ii in range(8):
-                    for jj in range(8):
-                        img_copy[8 * x + ii][8 * y + jj] = 0
+    img_mask = get_img_mask(img, relative_block_list, 60)
 
     cv2.namedWindow("Image")
-    cv2.imshow("Image", img_copy)
+    cv2.imshow("Image", img_mask)
     cv2.waitKey(0)
