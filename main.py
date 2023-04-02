@@ -84,7 +84,7 @@ def quantify_dct_block(dct_block: np.ndarray, Q=5) -> np.ndarray:
 
 
 # 得到黑白二值化图像
-def get_img_bin(img, relative_block_list, threshold=48) -> np.ndarray:
+def get_img_bin(img, relative_block_list, threshold=0) -> np.ndarray:
     """
     :param img: 原图像
     :param relative_block_list: get_feature的返回值
@@ -106,7 +106,7 @@ def get_img_bin(img, relative_block_list, threshold=48) -> np.ndarray:
 
 
 # 得到相似部分为黑块遮蔽的图像
-def get_img_mask(img, relative_block_list, threshold=48):
+def get_img_mask(img, relative_block_list, threshold=0):
     """
     :param img: 原图像
     :param relative_block_list: get_feature的返回值
@@ -129,7 +129,7 @@ def get_img_mask(img, relative_block_list, threshold=48):
 
 if __name__ == '__main__':
     image_path = './data/015_F.png'
-    threshold = 60
+    threshold = 0
     # 按灰度值读取
     img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 
@@ -137,7 +137,7 @@ if __name__ == '__main__':
     dct_block = get_dct_block(img_block)
     quantified_block = quantify_dct_block(dct_block, 5)
 
-    relative_block_list = get_feature(quantified_block, 0.2, 0.2)
+    relative_block_list = get_feature(quantified_block, 0.2,10)
 
     # 输出测试
     img_mask = get_img_mask(img, relative_block_list, threshold)
