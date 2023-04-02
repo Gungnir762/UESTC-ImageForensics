@@ -5,11 +5,12 @@ from sklearn import metrics  # 评估模型
 import matplotlib.pyplot as plt  # 可视化绘图
 
 
-def get_feature(matrix: np.ndarray, Q1: float, Q2: float):
+def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int):
     """
     :param matrix:
     :param Q1: Q1取[0,1]，代表两个copy-move图像间的最小距离，Q1取0代表距离最小为0，取1代表距离为整个图像的对角线，一般取0.2
     :param Q2: Q2取(0,+inf)，代表对判断两个特征向量相似性的严格程度，越小越严格，一般取10
+    :param Q3: Q3取正整数，一般在[5,10]，越大，判断为疑似cpoy-move的块数越多，相应地准确度也会变低
     :return:{(x,y):(((x11,y11),(x12,y12)),((x21,y21),(x22,y22)),...),...}
             key (x,y)为位移向量,value (x11,y11),(x12,y12)为相同位移向量的块在原矩阵中的坐标,每两个块为一组
     """
@@ -39,9 +40,9 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float):
         else:
             res[dis_vec].add(((vec_arr[i]["x"], vec_arr[i]["y"]), (vec_arr[i - 1]["x"], vec_arr[i - 1]["y"])))
 
-    useful_dis_vec_array = get_biggest_cluster(dis_vec_list)
+    useful_dis_vec_array = get_biggest_cluster(dis_vec_list, Q3)
     usefel_res = {}
-    # show_data(dis_vec_list)
+    # show_data(dis_vec_list,Q3)
     for i in range(len(useful_dis_vec_array)):
         useful_dis_vec = useful_dis_vec_array[i]
         usefel_res[useful_dis_vec] = res[useful_dis_vec]
@@ -127,9 +128,9 @@ def shrink_vec(vec: tuple, Q: float) -> tuple:
     return (x, y)
 
 
-def get_biggest_cluster(point_array: list) -> list:
+def get_biggest_cluster(point_array: list, Q: int) -> list:
     X = np.array(point_array)
-    db = skc.DBSCAN(eps=1.5, min_samples=10).fit(X)
+    db = skc.DBSCAN(eps=1.5, min_samples=Q).fit(X)
     labels = db.labels_
     labels_copy = []
     for i in labels:
@@ -138,17 +139,17 @@ def get_biggest_cluster(point_array: list) -> list:
     max_val = max(labels_copy, key=labels_copy.count)
     res = X[labels == max_val]
 
-    ans=[]
+    ans = []
     for i in res:
         ans.append(tuple(i))
-    ans=list(set(ans))
+    ans = list(set(ans))
     return ans
 
 
-def show_data(data: list):
+def show_data(data: list, Q: int):
     X = np.array(data)
 
-    db = skc.DBSCAN(eps=1.5, min_samples=10).fit(X)  # DBSCAN聚类方法 还有参数，matric = ""距离计算方法
+    db = skc.DBSCAN(eps=1.5, min_samples=Q).fit(X)  # DBSCAN聚类方法 还有参数，matric = ""距离计算方法
     labels = db.labels_  # 和X同一个维度，labels对应索引序号的值 为她所在簇的序号。若簇编号为-1，表示为噪声
 
     print('每个样本的簇标号:')
