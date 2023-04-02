@@ -1,7 +1,8 @@
+# 按DCT判断相似度
 import cv2
 import numpy as np
 
-from GetFeature import get_feature
+from getFeature import get_feature
 
 
 # 计算矩阵的DCT变换
@@ -83,24 +84,25 @@ def quantify_dct_block(dct_block: np.ndarray, Q=5) -> np.ndarray:
 
 
 # 得到黑白二值化图像
-def get_binary_img(dct_block: np.ndarray, relative_block_list) -> np.ndarray:
+def get_img_bin(img, relative_block_list, threshold=48) -> np.ndarray:
     """
-    :param dct_block: 量化后的DCT变换后的8*8矩阵
-    :param relative_block_list:
-    :return: 只有两种像素值（0或255）的二值化图像dd
+    :param img: 原图像
+    :param relative_block_list: get_feature的返回值
+    :param threshold: 特征向量数量阈值
+    :return: 二值化后的图像
     """
-    r, c = dct_block.shape
-    r0, c0 = dct_block[0][0].shape
-    binary_img = np.zeros((r, c), dtype=np.ndarray)
-
-    for key in relative_block_list:
-        if len(relative_block_list[key]) < 47:
+    img_bin = np.ones(img.shape, dtype=np.uint8) * 255
+    for i in relative_block_list:
+        if len(relative_block_list[i]) < threshold:
             continue
-        for point_pair in relative_block_list[key]:
-            binary_img[point_pair[0][0]][point_pair[0][1]] = np.ones((r0, c0), dtype=np.uint8) * 255
-            binary_img[point_pair[1][0]][point_pair[1][1]] = np.ones((r0, c0), dtype=np.uint8) * 255
-
-    return binary_img
+        for j in relative_block_list[i]:
+            for k in range(2):
+                x = j[k][0]
+                y = j[k][1]
+                for ii in range(8):
+                    for jj in range(8):
+                        img_bin[8 * x + ii][8 * y + jj] = 0
+    return img_bin
 
 
 # 得到相似部分为黑块遮蔽的图像
@@ -127,6 +129,7 @@ def get_img_mask(img, relative_block_list, threshold=48):
 
 if __name__ == '__main__':
     image_path = './data/015_F.png'
+    threshold = 60
     # 按灰度值读取
     img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 
@@ -137,9 +140,11 @@ if __name__ == '__main__':
     relative_block_list = get_feature(quantified_block, 0.2, 0.2)
 
     # 输出测试
-    img_mask = get_img_mask(img, relative_block_list, 60)
+    img_mask = get_img_mask(img, relative_block_list, threshold)
+    img_bin = get_img_bin(img, relative_block_list, threshold)
 
-    tmp = np.hstack((img, img_mask))
+    # 合并原图和遮蔽图，便于对比
+    tmp = np.hstack((img, img_mask, img_bin))
     cv2.namedWindow("Image")
     cv2.imshow("Image", tmp)
     cv2.waitKey(0)
