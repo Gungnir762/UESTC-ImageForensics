@@ -10,7 +10,7 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int):
     :param matrix:
     :param Q1: Q1取[0,1]，代表两个copy-move图像间的最小距离，Q1取0代表距离最小为0，取1代表距离为整个图像的对角线，一般取0.2
     :param Q2: Q2取(0,+inf)，代表对判断两个特征向量相似性的严格程度，越小越严格，一般取10
-    :param Q3: Q3取正整数，一般在[5,10]，越大，判断为疑似cpoy-move的块数越多，相应地准确度也会变低
+    :param Q3: Q3取正整数，一般在[5,10]，越小，判断为疑似cpoy-move的块数越多，相应地准确度也会变低
     :return:{(x,y):(((x11,y11),(x12,y12)),((x21,y21),(x22,y22)),...),...}
             key (x,y)为位移向量,value (x11,y11),(x12,y12)为相同位移向量的块在原矩阵中的坐标,每两个块为一组
     """
