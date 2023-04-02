@@ -45,7 +45,7 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float):
     for i in range(len(useful_dis_vec_array)):
         useful_dis_vec = useful_dis_vec_array[i]
         usefel_res[useful_dis_vec] = res[useful_dis_vec]
-    return res
+    return usefel_res
 
 
 def get_zigzag(matrix: np.ndarray) -> list:
