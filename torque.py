@@ -86,11 +86,8 @@ if __name__ == '__main__':
     image_path = './data/015_F.png'
     # 按灰度值读取
     img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-
     img_block = divide2block(img)
-
     torque_block = get_torque(img_block)
-
     equal_dict = get_equal_torque_block(torque_block)
     # print(torque_block)
     # print(type(torque_block[0][0]))
