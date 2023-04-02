@@ -138,10 +138,6 @@ if __name__ == '__main__':
     quantified_block = quantify_dct_block(dct_block, 5)
 
     relative_block_list = get_feature(quantified_block, 0.2,10,10)
-    all=0
-    for i in relative_block_list:
-        all+=2*len(relative_block_list[i])
-    print(all)
 
     # 输出测试
     img_mask = get_img_mask(img, relative_block_list, threshold)
