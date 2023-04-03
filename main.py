@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 
 from getFeature import get_feature
+from divide import divide2block
 
 
 # 计算矩阵的DCT变换
@@ -12,36 +13,36 @@ def DCT(matrix: np.ndarray) -> np.ndarray:
     return matrix_dct
 
 
-# 将原二维矩阵按8*8分块，返回分块后的矩阵
-def divide2block(matrix: np.ndarray, step=8) -> np.ndarray:
-    # 创建8*8的小矩阵
-    def create_matrix(matrix: np.ndarray, row, col, step) -> np.ndarray:
-        """
-        :param matrix: 原矩阵
-        :param row: 开始时处在分块8*8矩阵中的X坐标
-        :param col: Y坐标
-        :param step: 步长
-        :return: 创建好的8*8矩阵
-        """
-        temp = np.zeros((step, step), dtype=int)
-        for i, m in zip(range(step), range(step * row, step * row + step)):
-            for j, n in zip(range(step), range(step * col, step * col + step)):
-                # print(matrix[m][n])
-                temp[i][j] = matrix[m][n]
-        return temp
-
-    # 获取矩阵的行数和列数
-    row, col = matrix.shape
-    # 计算分块后的矩阵的行数和列数
-    row_block = row // step
-    col_block = col // step
-    # 初始化分块后的矩阵
-    matrix_block = np.zeros((row_block, col_block), dtype=np.ndarray)
-    # 按8*8的矩阵分块
-    for i in range(0, row_block):
-        for j in range(0, col_block):
-            matrix_block[i][j] = create_matrix(matrix, i, j, step)
-    return matrix_block
+# # 将原二维矩阵按8*8分块，返回分块后的矩阵
+# def divide2block(matrix: np.ndarray, step=8) -> np.ndarray:
+#     # 创建8*8的小矩阵
+#     def create_matrix(matrix: np.ndarray, row, col, step) -> np.ndarray:
+#         """
+#         :param matrix: 原矩阵
+#         :param row: 开始时处在分块8*8矩阵中的X坐标
+#         :param col: Y坐标
+#         :param step: 步长
+#         :return: 创建好的8*8矩阵
+#         """
+#         temp = np.zeros((step, step), dtype=int)
+#         for i, m in zip(range(step), range(step * row, step * row + step)):
+#             for j, n in zip(range(step), range(step * col, step * col + step)):
+#                 # print(matrix[m][n])
+#                 temp[i][j] = matrix[m][n]
+#         return temp
+#
+#     # 获取矩阵的行数和列数
+#     row, col = matrix.shape
+#     # 计算分块后的矩阵的行数和列数
+#     row_block = row // step
+#     col_block = col // step
+#     # 初始化分块后的矩阵
+#     matrix_block = np.zeros((row_block, col_block), dtype=np.ndarray)
+#     # 按8*8的矩阵分块
+#     for i in range(0, row_block):
+#         for j in range(0, col_block):
+#             matrix_block[i][j] = create_matrix(matrix, i, j, step)
+#     return matrix_block
 
 
 def get_dct_block(img_block: np.ndarray) -> np.ndarray:
@@ -128,7 +129,7 @@ def get_img_mask(img, relative_block_list, threshold=0):
 
 
 if __name__ == '__main__':
-    image_path = './data/008_F.png'
+    image_path = './data/015_F.png'
     threshold = 0
     # 按灰度值读取
     img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
@@ -137,7 +138,15 @@ if __name__ == '__main__':
     dct_block = get_dct_block(img_block)
     quantified_block = quantify_dct_block(dct_block, 5)
 
-    relative_block_list = get_feature(quantified_block, 0.2,10,10)
+    relative_block_list = get_feature(quantified_block, 0.2,10,500)
+
+    img_copy=img.copy()
+    for point in relative_block_list:
+        img_copy[point[0]+4][point[1]+4]=0
+    cv2.namedWindow("Image")
+    cv2.imshow("Image",img_copy)
+    cv2.waitKey(0)
+    exit(0)
 
     # 输出测试
     img_mask = get_img_mask(img, relative_block_list, threshold)

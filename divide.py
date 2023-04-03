@@ -29,7 +29,6 @@ def divide2block(img: np.ndarray, step=8):
     r_block = r - step + 1
     c_block = c - step + 1
     img_block = np.zeros((r_block, c_block), dtype=np.ndarray)
-    print(img_block.shape)
 
     # 按8*8的矩阵分块
     for i in range(r_block):

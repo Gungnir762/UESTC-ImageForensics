@@ -3,6 +3,7 @@ import numpy as np
 import sklearn.cluster as skc  # 密度聚类
 from sklearn import metrics  # 评估模型
 import matplotlib.pyplot as plt  # 可视化绘图
+import time
 
 
 def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int):
@@ -11,19 +12,21 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int):
     :param Q1: Q1取[0,1]，代表两个copy-move图像间的最小距离，Q1取0代表距离最小为0，取1代表距离为整个图像的对角线，一般取0.2
     :param Q2: Q2取(0,+inf)，代表对判断两个特征向量相似性的严格程度，越小越严格，一般取10
     :param Q3: Q3取正整数，一般在[5,10]，越小，判断为疑似copy-move的块数越多，相应地准确度也会变低
-    :return:{(x,y):(((x11,y11),(x12,y12)),((x21,y21),(x22,y22)),...),...}
-            key (x,y)为位移向量,value (x11,y11),(x12,y12)为相同位移向量的块在原矩阵中的坐标,每两个块为一组
+    :return: list[tuple]，有效点构成的列表
     """
     vec_arr = []
     n, m = matrix.shape[:2]
+    x, y = matrix[0][0].shape
     for i in range(n):
         for j in range(m):
-            vec_arr.append({"vec": get_zigzag(matrix[i][j]), "x": i, "y": j})
+            vec_arr.append({"vec": get_zigzag(matrix[i][j], (x * y) // 3), "x": i, "y": j})
     vec_arr.sort(key=cmp)
+    print("特征向量排序完毕")
 
     min_dis = pow(n ** 2 + m ** 2, 0.5) * Q1
     res = {}
     dis_vec_list = []
+    start=time.perf_counter()
     for i in range(len(vec_arr))[1:]:
         dis_vec = cal_dis_vec(vec_arr[i - 1], vec_arr[i])
         if cal_module(dis_vec) < min_dis:
@@ -39,20 +42,33 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int):
             res[dis_vec] = s
         else:
             res[dis_vec].add(((vec_arr[i]["x"], vec_arr[i]["y"]), (vec_arr[i - 1]["x"], vec_arr[i - 1]["y"])))
+    end = time.perf_counter()
 
     useful_dis_vec_array = get_biggest_cluster(dis_vec_list, Q3)
-    usefel_res = {}
-    # show_data(dis_vec_list,Q3)
+    useful_x_points=[]
+    usefel_points_pairs = {}
+    usefel_points=[]
     for i in range(len(useful_dis_vec_array)):
         useful_dis_vec = useful_dis_vec_array[i]
-        usefel_res[useful_dis_vec] = res[useful_dis_vec]
-    return usefel_res
+        for points_pair in res[useful_dis_vec]:
+            usefel_points_pairs[points_pair[0]]=points_pair[1]
+            useful_x_points.append(list(points_pair[0]))
+    # show_data(useful_x_points,3)
+    # exit(0)
+    useful_x_points=get_biggest_cluster(useful_x_points,3)
+    print("可疑点寻找完毕，正在统计...")
+    for x_point in useful_x_points:
+        usefel_points.append(x_point)
+        usefel_points.append(usefel_points_pairs[x_point])
+    return usefel_points
 
 
-def get_zigzag(matrix: np.ndarray) -> list:
+# 获取z字形展开，取前len位
+def get_zigzag(matrix: np.ndarray, len: int) -> list:
     """
-    :param matrix:8*8的DCT变换后的小矩阵
-    :return: z字形排列后得到的列表
+    :param matrix: 8*8的DCT变换后的小矩阵
+    :param len: 保留的长度
+    :return: z字形排列后得到的列表，长度为len
     """
     res = []
     f = 0
@@ -83,7 +99,7 @@ def get_zigzag(matrix: np.ndarray) -> list:
             else:
                 loc["x"] += 1
             f ^= 1
-    return res
+    return res[:len]
 
 
 def cmp(a: dict) -> list:
@@ -116,19 +132,13 @@ def cal_module(vec: tuple) -> float:
     return pow(vec[0] ** 2 + vec[1] ** 2, 0.5)
 
 
-# 放缩向量
-def shrink_vec(vec: tuple, Q: float) -> tuple:
-    x = int(vec[0] * Q)
-    y = int(vec[1] * Q)
-    if x < 0:
-        x = -x
-        y = -y
-    elif x == 0 and y < 0:
-        y = -y
-    return (x, y)
-
-
+# 寻找最有可能的位移向量簇
 def get_biggest_cluster(point_array: list, Q: int) -> list:
+    """
+    :param point_array: list[list]，点集
+    :param Q: 表示每个点周围的八连通区域内（包括自己的位置，但不包括自己）还有多少个点，它才会与这些点纳入同一聚类
+    :return: list[tuple]，最大簇的点集（去重后）
+    """
     X = np.array(point_array)
     db = skc.DBSCAN(eps=1.5, min_samples=Q).fit(X)
     labels = db.labels_
@@ -149,7 +159,11 @@ def get_biggest_cluster(point_array: list, Q: int) -> list:
 def show_data(data: list, Q: int):
     X = np.array(data)
 
+    print("开始聚类")
+    start=time.perf_counter()
     db = skc.DBSCAN(eps=1.5, min_samples=Q).fit(X)  # DBSCAN聚类方法 还有参数，matric = ""距离计算方法
+    end =time.perf_counter()
+    print("聚类算法执行时间:",end-start,"s")
     labels = db.labels_  # 和X同一个维度，labels对应索引序号的值 为她所在簇的序号。若簇编号为-1，表示为噪声
 
     print('每个样本的簇标号:')
@@ -161,7 +175,7 @@ def show_data(data: list, Q: int):
     n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)  # 获取分簇的数目
 
     print('分簇的数目: %d' % n_clusters_)
-    print("轮廓系数: %0.3f" % metrics.silhouette_score(X, labels))  # 轮廓系数评价聚类的好坏
+    # print("轮廓系数: %0.3f" % metrics.silhouette_score(X, labels))  # 轮廓系数评价聚类的好坏
 
     # label的值是一个与X长度相同，里面为每一个X对应的簇Index
 
@@ -177,7 +191,6 @@ def show_data(data: list, Q: int):
     for i in range(n_clusters_):
         one_cluster = X[labels == i]
         plt.plot(one_cluster[:, 0], one_cluster[:, 1], 'o')
-
     plt.show()
     plt.close()
     one_cluster = X[labels == max_val]
