@@ -83,7 +83,7 @@ def get_img_bin(img, vector_dict, threshold=5) -> np.ndarray:
 
 
 if __name__ == '__main__':
-    image_path = './data/015_F.png'
+    image_path = './data/011_F.png'
     # 按灰度值读取
     img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     img_block = divide2block(img)

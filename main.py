@@ -128,7 +128,7 @@ def get_img_mask(img, relative_block_list, threshold=0):
 
 
 if __name__ == '__main__':
-    image_path = './data/012_F.png'
+    image_path = './data/008_F.png'
     threshold = 0
     # 按灰度值读取
     img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
