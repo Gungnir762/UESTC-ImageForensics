@@ -3,7 +3,7 @@ import cv2
 
 
 # 按像素点分为(M-b+1)*(N-b+1)个8*8的矩阵块，本问题中为（505，505）
-def divide2block(img: np.ndarray, step=8):
+def divide2block(img: np.ndarray, step=8) -> np.ndarray:
     """
     :param img: 原图像
     :param step: 步长

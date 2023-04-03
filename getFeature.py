@@ -26,7 +26,7 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int):
     min_dis = pow(n ** 2 + m ** 2, 0.5) * Q1
     res = {}
     dis_vec_list = []
-    start=time.perf_counter()
+    start = time.perf_counter()
     for i in range(len(vec_arr))[1:]:
         dis_vec = cal_dis_vec(vec_arr[i - 1], vec_arr[i])
         if cal_module(dis_vec) < min_dis:
@@ -45,17 +45,17 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int):
     end = time.perf_counter()
 
     useful_dis_vec_array = get_biggest_cluster(dis_vec_list, Q3)
-    useful_x_points=[]
+    useful_x_points = []
     usefel_points_pairs = {}
-    usefel_points=[]
+    usefel_points = []
     for i in range(len(useful_dis_vec_array)):
         useful_dis_vec = useful_dis_vec_array[i]
         for points_pair in res[useful_dis_vec]:
-            usefel_points_pairs[points_pair[0]]=points_pair[1]
+            usefel_points_pairs[points_pair[0]] = points_pair[1]
             useful_x_points.append(list(points_pair[0]))
     # show_data(useful_x_points,3)
     # exit(0)
-    useful_x_points=get_biggest_cluster(useful_x_points,3)
+    useful_x_points = get_biggest_cluster(useful_x_points, 3)
     print("可疑点寻找完毕，正在统计...")
     for x_point in useful_x_points:
         usefel_points.append(x_point)
@@ -160,10 +160,10 @@ def show_data(data: list, Q: int):
     X = np.array(data)
 
     print("开始聚类")
-    start=time.perf_counter()
+    start = time.perf_counter()
     db = skc.DBSCAN(eps=1.5, min_samples=Q).fit(X)  # DBSCAN聚类方法 还有参数，matric = ""距离计算方法
-    end =time.perf_counter()
-    print("聚类算法执行时间:",end-start,"s")
+    end = time.perf_counter()
+    print("聚类算法执行时间:", end - start, "s")
     labels = db.labels_  # 和X同一个维度，labels对应索引序号的值 为她所在簇的序号。若簇编号为-1，表示为噪声
 
     print('每个样本的簇标号:')
