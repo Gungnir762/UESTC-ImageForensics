@@ -52,7 +52,7 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int, Q4: float):
         else:
             res[dis_vec].add(((vec_arr[i]["x"], vec_arr[i]["y"]), (vec_arr[i - 1]["x"], vec_arr[i - 1]["y"])))
 
-    show_data(dis_vec_list,Q4,Q3)
+    # show_data(dis_vec_list,Q4,Q3)
     # exit(0)
     useful_dis_vec_array = get_biggest_cluster(dis_vec_list, Q4, Q3)
     useful_x_points = []
@@ -64,7 +64,7 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int, Q4: float):
             usefel_points_pairs[points_pair[0]] = points_pair[1]
             useful_x_points.append(list(points_pair[0]))
     # print(useful_x_points)
-    show_data(useful_x_points,1.5,3)
+    # show_data(useful_x_points,1.5,3)
     # exit(0)
     useful_x_points = get_biggest_cluster(useful_x_points, 1.5, 3)
     print("可疑点寻找完毕，正在统计...")
