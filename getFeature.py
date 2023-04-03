@@ -6,12 +6,13 @@ import matplotlib.pyplot as plt  # 可视化绘图
 import time
 
 
-def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int):
+def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int, Q4: float):
     """
     :param matrix:
-    :param Q1: Q1取[0,1]，代表两个copy-move图像间的最小距离，Q1取0代表距离最小为0，取1代表距离为整个图像的对角线，一般取0.2
-    :param Q2: Q2取(0,+inf)，代表对判断两个特征向量相似性的严格程度，越小越严格，一般取10
-    :param Q3: Q3取正整数，一般在[5,10]，越小，判断为疑似copy-move的块数越多，相应地准确度也会变低
+    :param Q1: Q1取[0,1]，代表两个copy-move图像间的最小距离，Q1取0代表距离最小为0，取1代表距离为整个图像的对角线，一般取0.1
+    :param Q2: Q2取(0,+inf)，代表对判断两个特征向量相似性的严格程度，越小越严格，一般取2
+    :param Q3: Q3取正整数，一般在[50,200]，越小，判断为疑似copy-move的块数越多，相应地准确度也会变低
+    :param Q4: Q4取不小于1.5的浮点数，当伪造图完全为平移时可取1.5，若伪造图存在旋转、放缩等，或取1.5时效果不好，视程度增大
     :return: list[tuple]，有效点构成的列表
     """
     vec_arr = []
@@ -26,7 +27,6 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int):
     min_dis = pow(n ** 2 + m ** 2, 0.5) * Q1
     res = {}
     dis_vec_list = []
-    start=time.perf_counter()
     for i in range(len(vec_arr))[1:]:
         dis_vec = cal_dis_vec(vec_arr[i - 1], vec_arr[i])
         if cal_module(dis_vec) < min_dis:
@@ -37,25 +37,36 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int):
         #     print(dif_of_vec(vec_arr[i - 1]["vec"], vec_arr[i]["vec"]), dis_vec)
         dis_vec_list.append([dis_vec[0], dis_vec[1]])
         if not res.__contains__(dis_vec):
+            k = ((vec_arr[i - 1]["x"], vec_arr[i - 1]["y"]), (vec_arr[i]["x"], vec_arr[i]["y"]))
+            s = {k}
+            res[dis_vec] = s
+        else:
+            res[dis_vec].add(((vec_arr[i - 1]["x"], vec_arr[i - 1]["y"]), (vec_arr[i]["x"], vec_arr[i]["y"])))
+
+        dis_vec=(-dis_vec[0],-dis_vec[1])
+        dis_vec_list.append([dis_vec[0], dis_vec[1]])
+        if not res.__contains__(dis_vec):
             k = ((vec_arr[i]["x"], vec_arr[i]["y"]), (vec_arr[i - 1]["x"], vec_arr[i - 1]["y"]))
             s = {k}
             res[dis_vec] = s
         else:
             res[dis_vec].add(((vec_arr[i]["x"], vec_arr[i]["y"]), (vec_arr[i - 1]["x"], vec_arr[i - 1]["y"])))
-    end = time.perf_counter()
 
-    useful_dis_vec_array = get_biggest_cluster(dis_vec_list, Q3)
-    useful_x_points=[]
+    show_data(dis_vec_list,Q4,Q3)
+    # exit(0)
+    useful_dis_vec_array = get_biggest_cluster(dis_vec_list, Q4, Q3)
+    useful_x_points = []
     usefel_points_pairs = {}
-    usefel_points=[]
+    usefel_points = []
     for i in range(len(useful_dis_vec_array)):
         useful_dis_vec = useful_dis_vec_array[i]
         for points_pair in res[useful_dis_vec]:
-            usefel_points_pairs[points_pair[0]]=points_pair[1]
+            usefel_points_pairs[points_pair[0]] = points_pair[1]
             useful_x_points.append(list(points_pair[0]))
-    # show_data(useful_x_points,3)
+    # print(useful_x_points)
+    show_data(useful_x_points,1.5,3)
     # exit(0)
-    useful_x_points=get_biggest_cluster(useful_x_points,3)
+    useful_x_points = get_biggest_cluster(useful_x_points, 1.5, 3)
     print("可疑点寻找完毕，正在统计...")
     for x_point in useful_x_points:
         usefel_points.append(x_point)
@@ -108,13 +119,8 @@ def cmp(a: dict) -> list:
 
 # 计算位移向量
 def cal_dis_vec(a: dict, b: dict) -> tuple:
-    x = a["x"] - b["x"]
-    y = a["y"] - b["y"]
-    if x < 0:
-        x = -x
-        y = -y
-    elif x == 0 and y < 0:
-        y = -y
+    x = b["x"] - a["x"]
+    y = b["y"] - a["y"]
     return x, y
 
 
@@ -133,14 +139,15 @@ def cal_module(vec: tuple) -> float:
 
 
 # 寻找最有可能的位移向量簇
-def get_biggest_cluster(point_array: list, Q: int) -> list:
+def get_biggest_cluster(point_array: list, Q1: float, Q2: int) -> list:
     """
     :param point_array: list[list]，点集
-    :param Q: 表示每个点周围的八连通区域内（包括自己的位置，但不包括自己）还有多少个点，它才会与这些点纳入同一聚类
+    :param Q1: 表示每个点周围的半径大小
+    :param Q2: 表示每个点周围的半径Q1区域内（包括自己的位置，但不包括自己）还有多少个点，它才会与这些点纳入同一聚类
     :return: list[tuple]，最大簇的点集（去重后）
     """
     X = np.array(point_array)
-    db = skc.DBSCAN(eps=1.5, min_samples=Q).fit(X)
+    db = skc.DBSCAN(eps=Q1, min_samples=Q2).fit(X)
     labels = db.labels_
     labels_copy = []
     for i in labels:
@@ -156,14 +163,14 @@ def get_biggest_cluster(point_array: list, Q: int) -> list:
     return ans
 
 
-def show_data(data: list, Q: int):
+def show_data(data: list, Q1: float, Q2: int):
     X = np.array(data)
 
     print("开始聚类")
-    start=time.perf_counter()
-    db = skc.DBSCAN(eps=1.5, min_samples=Q).fit(X)  # DBSCAN聚类方法 还有参数，matric = ""距离计算方法
-    end =time.perf_counter()
-    print("聚类算法执行时间:",end-start,"s")
+    start = time.perf_counter()
+    db = skc.DBSCAN(eps=Q1, min_samples=Q2).fit(X)  # DBSCAN聚类方法 还有参数，matric = ""距离计算方法
+    end = time.perf_counter()
+    print("聚类算法执行时间:", end - start, "s")
     labels = db.labels_  # 和X同一个维度，labels对应索引序号的值 为她所在簇的序号。若簇编号为-1，表示为噪声
 
     print('每个样本的簇标号:')
