@@ -174,7 +174,6 @@ def get_clusters(point_array: list, Q1: float, Q2: int) -> list:
         if i != -1:
             labels_copy.append(i)
     if len(labels_copy) == 0:
-        print("未找到任何簇")
         return None
     # max_val = max(labels_copy, key=labels_copy.count)
     # res = X[labels == max_val]
