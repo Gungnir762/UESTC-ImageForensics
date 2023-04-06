@@ -72,9 +72,9 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int, Q4: float):
                 usefel_points_pairs[points_pair[0]] = points_pair[1]
                 useful_x_points.append(list(points_pair[0]))
         # print(useful_x_points)
-        # show_data(useful_x_points,1.5,4)
+        # show_data(useful_x_points,1.5,5)
         # exit(0)
-        useful_x_points_array = get_clusters(useful_x_points, 1.5, 4)
+        useful_x_points_array = get_clusters(useful_x_points, 1.5, 5)
         if useful_x_points_array == None:
             continue
         for useful_x_points in useful_x_points_array:
