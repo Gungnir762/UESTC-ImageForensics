@@ -25,7 +25,7 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int, Q4: float):
     print("特征向量排序完毕")
     # print(len(vec_arr))
 
-    tmp=0
+    tmp = 0
     min_dis = pow(n ** 2 + m ** 2, 0.5) * Q1
     res = {}
     dis_vec_list = []
@@ -36,7 +36,7 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int, Q4: float):
         if dif_of_vec(vec_arr[i - 1]["vec"], vec_arr[i]["vec"]) > Q2:
             continue
 
-        tmp+=1
+        tmp += 1
         dis_vec_list.append([dis_vec[0], dis_vec[1]])
         if not res.__contains__(dis_vec):
             k = ((vec_arr[i - 1]["x"], vec_arr[i - 1]["y"]), (vec_arr[i]["x"], vec_arr[i]["y"]))
@@ -45,7 +45,7 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int, Q4: float):
         else:
             res[dis_vec].add(((vec_arr[i - 1]["x"], vec_arr[i - 1]["y"]), (vec_arr[i]["x"], vec_arr[i]["y"])))
 
-        dis_vec=(-dis_vec[0],-dis_vec[1])
+        dis_vec = (-dis_vec[0], -dis_vec[1])
         dis_vec_list.append([dis_vec[0], dis_vec[1]])
         if not res.__contains__(dis_vec):
             k = ((vec_arr[i]["x"], vec_arr[i]["y"]), (vec_arr[i - 1]["x"], vec_arr[i - 1]["y"]))
@@ -53,27 +53,38 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int, Q4: float):
             res[dis_vec] = s
         else:
             res[dis_vec].add(((vec_arr[i]["x"], vec_arr[i]["y"]), (vec_arr[i - 1]["x"], vec_arr[i - 1]["y"])))
-    # print(tmp)
+    if tmp == 0:
+        print("未发现相似块")
+        return None
 
     # show_data(dis_vec_list,Q4,Q3)
     # exit(0)
-    useful_dis_vec_array = get_biggest_cluster(dis_vec_list, Q4, Q3)
-    useful_x_points = []
-    usefel_points_pairs = {}
+    useful_dis_vec_arrays = get_clusters(dis_vec_list, Q4, Q3)
+    if useful_dis_vec_arrays==None:
+        return None
     usefel_points = []
-    for i in range(len(useful_dis_vec_array)):
-        useful_dis_vec = useful_dis_vec_array[i]
-        for points_pair in res[useful_dis_vec]:
-            usefel_points_pairs[points_pair[0]] = points_pair[1]
-            useful_x_points.append(list(points_pair[0]))
-    # print(useful_x_points)
-    # show_data(useful_x_points,1.5,3)
-    # exit(0)
-    useful_x_points = get_biggest_cluster(useful_x_points, 1.5, 3)
-    print("可疑点寻找完毕，正在统计...")
-    for x_point in useful_x_points:
-        usefel_points.append(x_point)
-        usefel_points.append(usefel_points_pairs[x_point])
+    for useful_dis_vec_array in useful_dis_vec_arrays:
+        useful_x_points = []
+        usefel_points_pairs = {}
+        for i in range(len(useful_dis_vec_array)):
+            useful_dis_vec = useful_dis_vec_array[i]
+            for points_pair in res[useful_dis_vec]:
+                usefel_points_pairs[points_pair[0]] = points_pair[1]
+                useful_x_points.append(list(points_pair[0]))
+        # print(useful_x_points)
+        # show_data(useful_x_points,1.5,4)
+        # exit(0)
+        useful_x_points_array = get_clusters(useful_x_points, 1.5, 4)
+        if useful_x_points_array == None:
+            continue
+        for useful_x_points in useful_x_points_array:
+            if len(useful_x_points) < Q3:
+                continue
+            for x_point in useful_x_points:
+                usefel_points.append(x_point)
+                usefel_points.append(usefel_points_pairs[x_point])
+
+    print("可疑点寻找完毕")
     return usefel_points
 
 
@@ -131,14 +142,14 @@ def cal_dis_vec(a: dict, b: dict) -> tuple:
 def dif_of_vec(a: list, b: list) -> float:
     l = min(len(a), len(b))
     all = 0.0
-    r=1
-    cnt=r
+    r = 1
+    cnt = r
     for i in range(l):
         all += ((a[i] - b[i]) ** 2) / (r ** 2)
-        cnt-=1
-        if cnt==0:
-            r+=1
-            cnt=r
+        cnt -= 1
+        if cnt == 0:
+            r += 1
+            cnt = r
     return all
 
 
@@ -148,7 +159,7 @@ def cal_module(vec: tuple) -> float:
 
 
 # 寻找最有可能的位移向量簇
-def get_biggest_cluster(point_array: list, Q1: float, Q2: int) -> list:
+def get_clusters(point_array: list, Q1: float, Q2: int) -> list:
     """
     :param point_array: list[list]，点集
     :param Q1: 表示每个点周围的半径大小
@@ -162,16 +173,26 @@ def get_biggest_cluster(point_array: list, Q1: float, Q2: int) -> list:
     for i in labels:
         if i != -1:
             labels_copy.append(i)
-    if len(labels_copy)==0:
+    if len(labels_copy) == 0:
         print("未找到任何簇")
-        return []
-    max_val = max(labels_copy, key=labels_copy.count)
-    res = X[labels == max_val]
+        return None
+    # max_val = max(labels_copy, key=labels_copy.count)
+    # res = X[labels == max_val]
 
     ans = []
-    for i in res:
-        ans.append(tuple(i))
-    ans = list(set(ans))
+    n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
+    for i in range(n_clusters):
+        res = X[labels == i]
+        tmp = []
+        for j in res:
+            tmp.append(tuple(j))
+        tmp = list(set(tmp))
+        ans.append(tmp)
+
+    # ans = []
+    # for i in res:
+    #     ans.append(tuple(i))
+    # ans = list(set(ans))
     return ans
 
 
@@ -206,9 +227,9 @@ def show_data(data: list, Q1: float, Q2: int):
     for i in labels:
         if i != -1:
             labels_copy.append(i)
-    if len(labels_copy)==0:
+    if len(labels_copy) == 0:
         print("未找到任何簇")
-        return []
+        return None
     max_val = max(labels_copy, key=labels_copy.count)
     for i in range(n_clusters_):
         one_cluster = X[labels == i]
