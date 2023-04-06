@@ -20,10 +20,12 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int, Q4: float):
     x, y = matrix[0][0].shape
     for i in range(n):
         for j in range(m):
-            vec_arr.append({"vec": get_zigzag(matrix[i][j], (x * y) // 3), "x": i, "y": j})
+            vec_arr.append({"vec": get_zigzag(matrix[i][j], (x * y)), "x": i, "y": j})
     vec_arr.sort(key=cmp)
     print("特征向量排序完毕")
+    print(len(vec_arr))
 
+    tmp=0
     min_dis = pow(n ** 2 + m ** 2, 0.5) * Q1
     res = {}
     dis_vec_list = []
@@ -33,8 +35,8 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int, Q4: float):
             continue
         if dif_of_vec(vec_arr[i - 1]["vec"], vec_arr[i]["vec"]) > Q2:
             continue
-        # if dif_of_vec(vec_arr[i - 1]["vec"], vec_arr[i]["vec"])<10:
-        #     print(dif_of_vec(vec_arr[i - 1]["vec"], vec_arr[i]["vec"]), dis_vec)
+
+        tmp+=1
         dis_vec_list.append([dis_vec[0], dis_vec[1]])
         if not res.__contains__(dis_vec):
             k = ((vec_arr[i - 1]["x"], vec_arr[i - 1]["y"]), (vec_arr[i]["x"], vec_arr[i]["y"]))
@@ -51,6 +53,7 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int, Q4: float):
             res[dis_vec] = s
         else:
             res[dis_vec].add(((vec_arr[i]["x"], vec_arr[i]["y"]), (vec_arr[i - 1]["x"], vec_arr[i - 1]["y"])))
+    print(tmp)
 
     # show_data(dis_vec_list,Q4,Q3)
     # exit(0)
@@ -128,8 +131,14 @@ def cal_dis_vec(a: dict, b: dict) -> tuple:
 def dif_of_vec(a: list, b: list) -> float:
     l = min(len(a), len(b))
     all = 0.0
+    r=1
+    cnt=r
     for i in range(l):
-        all += ((a[i] - b[i]) ** 2) / (i + 1)
+        all += ((a[i] - b[i]) ** 2) / (r ** 2)
+        cnt-=1
+        if cnt==0:
+            r+=1
+            cnt=r
     return all
 
 

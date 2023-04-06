@@ -29,7 +29,7 @@ def get_dct_block(img_block: np.ndarray) -> np.ndarray:
 
 
 # 简单DCT量化
-def quantify_dct_block(dct_block: np.ndarray) -> np.ndarray:
+def quantify_dct_block(dct_block: np.ndarray, Q: float) -> np.ndarray:
     """
     :param dct_block: 以DCT变换后的8*8矩阵为元素的二维矩阵
     :return: 量化后的DCT变换后的8*8矩阵
@@ -43,7 +43,7 @@ def quantify_dct_block(dct_block: np.ndarray) -> np.ndarray:
                          [24, 36, 55, 64, 81, 104, 113, 92],
                          [49, 64, 78, 87, 103, 121, 120, 101],
                          [72, 92, 95, 98, 112, 100, 103, 99]])
-
+    q_matrix = q_matrix * Q
     r, c = dct_block.shape
     dct_block_int = np.zeros((r, c), dtype=np.ndarray)
     for i in range(r):
@@ -64,15 +64,15 @@ def get_img_masked_and_bin(img, relative_block_list):
 
 if __name__ == '__main__':
     start = time.time()
-    image_path = './data/050_F.png'
+    image_path = './data/006_F.png'
     # 按灰度值读取
     img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 
     img_block = divide2block(img)
     dct_block = get_dct_block(img_block)
-    quantified_block = quantify_dct_block(dct_block)
+    quantified_block = quantify_dct_block(dct_block, 0.01)
 
-    relative_block_list = get_feature(quantified_block, 0.05, 2, 150, 1.5)
+    relative_block_list = get_feature(quantified_block, 0.02, 0.5, 100, 1.5)
 
     img_masked, img_bin = get_img_masked_and_bin(img, relative_block_list)
 
