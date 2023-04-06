@@ -23,7 +23,7 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int, Q4: float):
             vec_arr.append({"vec": get_zigzag(matrix[i][j], (x * y)), "x": i, "y": j})
     vec_arr.sort(key=cmp)
     print("特征向量排序完毕")
-    print(len(vec_arr))
+    # print(len(vec_arr))
 
     tmp=0
     min_dis = pow(n ** 2 + m ** 2, 0.5) * Q1
@@ -53,7 +53,7 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int, Q4: float):
             res[dis_vec] = s
         else:
             res[dis_vec].add(((vec_arr[i]["x"], vec_arr[i]["y"]), (vec_arr[i - 1]["x"], vec_arr[i - 1]["y"])))
-    print(tmp)
+    # print(tmp)
 
     # show_data(dis_vec_list,Q4,Q3)
     # exit(0)

@@ -63,8 +63,9 @@ def get_img_masked_and_bin(img, relative_block_list):
 
 
 if __name__ == '__main__':
+    # image_path = './data/006_F.png'
+    image_path = input("请输入图片文件路径：")
     start = time.time()
-    image_path = './data/006_F.png'
     # 按灰度值读取
     img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 
