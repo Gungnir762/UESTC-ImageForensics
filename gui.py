@@ -1,3 +1,8 @@
+"""
+author:朱延瑞
+function:提供一个简单的图形界面用于人机交互
+notice:点击上传按钮后，左侧显示原图，右侧显示取证后的图像，运行大概需要30s
+"""
 import PySimpleGUI as sg
 import io
 from PIL import Image

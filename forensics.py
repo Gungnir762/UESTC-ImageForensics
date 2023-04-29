@@ -1,3 +1,8 @@
+"""
+author:朱延瑞
+function:对图片进行切分，计算DCT变换，提取特征
+notice:None
+"""
 import time
 import cv2
 import io
@@ -86,7 +91,7 @@ def quantify_dct_block(dct_block: np.ndarray, Q: float) -> np.ndarray:
     return dct_block_int
 
 
-def get_img_bin_io(img_bio: bytes) -> [io.BytesIO]:
+def get_img_bin_io(img_bio: [io.BytesIO]) -> [io.BytesIO]:
     start = time.time()
     # 按灰度值读取
     # img = cv2.imread(img_bio, cv2.IMREAD_GRAYSCALE)

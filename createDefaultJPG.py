@@ -1,3 +1,8 @@
+"""
+author:朱延瑞
+function:创建一个默认的白色图片
+notice:None
+"""
 import cv2
 import numpy as np
 
