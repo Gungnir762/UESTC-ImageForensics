@@ -1,5 +1,5 @@
 """
-author:朱延瑞
+author:zyr
 function:创建一个默认的白色图片
 notice:None
 """

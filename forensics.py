@@ -1,5 +1,5 @@
 """
-author:朱延瑞
+author:zyr
 function:对图片进行切分，计算DCT变换，提取特征
 notice:None
 """
