@@ -1,14 +1,19 @@
-import random
-import numpy as np
+"""
+getFeature
+作者：冯宇扬
+文件功能：根据图像的dct提取特征，计算疑似的伪造块
+注意事项：该模块只能找到完全平移的伪造块
+"""
+
+import numpy as np  # 矩阵
 import sklearn.cluster as skc  # 密度聚类
-from sklearn import metrics  # 评估模型
 import matplotlib.pyplot as plt  # 可视化绘图
-import time
+import time  # 计算执行时间
 
 
 def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int, Q4: float):
     """
-    :param matrix:
+    :param matrix: 图像的dct矩阵
     :param Q1: Q1取[0,1]，代表两个copy-move图像间的最小距离，Q1取0代表距离最小为0，取1代表距离为整个图像的对角线，一般取0.05
     :param Q2: Q2取(0,+inf)，代表对判断两个特征向量相似性的严格程度，越小越严格，一般取0.5
     :param Q3: Q3取正整数，一般在[20,100]，越小，判断为疑似copy-move的块数越多，相应地准确度也会变低，过大时对于较小的copy-move伪造块可能无法找到
