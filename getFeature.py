@@ -11,9 +11,10 @@ import matplotlib.pyplot as plt  # 可视化绘图
 import time  # 计算执行时间
 
 
+# 模块主函数，用于寻找伪造的像素块
 def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int, Q4: float):
     """
-    :param matrix: 图像的dct矩阵
+    :param matrix: 图像的dct矩阵，矩阵第(x, y)项是图像中以坐标(x, y)为左上角的8*8像素块进行dct变换后得到的8*8矩阵
     :param Q1: Q1取[0,1]，代表两个copy-move图像间的最小距离，Q1取0代表距离最小为0，取1代表距离为整个图像的对角线，一般取0.05
     :param Q2: Q2取(0,+inf)，代表对判断两个特征向量相似性的严格程度，越小越严格，一般取0.5
     :param Q3: Q3取正整数，一般在[20,100]，越小，判断为疑似copy-move的块数越多，相应地准确度也会变低，过大时对于较小的copy-move伪造块可能无法找到
