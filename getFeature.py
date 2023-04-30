@@ -21,6 +21,8 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int, Q4: float):
     :param Q4: Q4取不小于1.5的浮点数，当伪造图完全为平移时可取1.5，若取1.5时效果不好，视程度增大
     :return: list[tuple]，有效点构成的列表
     """
+
+    # z字形获取特征向量并进行排序
     vec_arr = []
     n, m = matrix.shape[:2]
     x, y = matrix[0][0].shape
@@ -31,6 +33,7 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int, Q4: float):
     print("特征向量排序完毕")
     # print(len(vec_arr))
 
+    # 统计相邻的相似块，并按照位移向量为索引记录
     tmp = 0
     min_dis = pow(n ** 2 + m ** 2, 0.5) * Q1
     res = {}
@@ -62,10 +65,12 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int, Q4: float):
         print("未发现相似块")
         return None
 
+    # 调用聚类算法，找到可疑的位移向量，进而找到可疑的坐标
+
     # show_data(dis_vec_list,Q4,Q3)
     # exit(0)
     useful_dis_vec_arrays = get_clusters(dis_vec_list, Q4, Q3)
-    if useful_dis_vec_arrays==None:
+    if useful_dis_vec_arrays == None:
         return None
     usefel_points = []
     for useful_dis_vec_array in useful_dis_vec_arrays:
@@ -192,7 +197,7 @@ def get_clusters(point_array: list, Q1: float, Q2: int) -> list:
         ans.append(tmp)
     return ans
 
-
+# 寻找所有位移向量或坐标簇，并显示调试信息
 def show_data(data: list, Q1: float, Q2: int):
     X = np.array(data)
 
@@ -213,12 +218,6 @@ def show_data(data: list, Q1: float, Q2: int):
 
     print('分簇的数目: %d' % n_clusters_)
     # print("轮廓系数: %0.3f" % metrics.silhouette_score(X, labels))  # 轮廓系数评价聚类的好坏
-
-    # label的值是一个与X长度相同，里面为每一个X对应的簇Index
-
-    # label==i返回一个与X长度相同，值为True 或False的数组（若簇Index==i是True）
-
-    # one_cluster就是当前簇对应的X数据
 
     labels_copy = []
     for i in labels:
