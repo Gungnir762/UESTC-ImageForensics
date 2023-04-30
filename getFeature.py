@@ -10,8 +10,8 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int, Q4: float):
     """
     :param matrix:
     :param Q1: Q1取[0,1]，代表两个copy-move图像间的最小距离，Q1取0代表距离最小为0，取1代表距离为整个图像的对角线，一般取0.05
-    :param Q2: Q2取(0,+inf)，代表对判断两个特征向量相似性的严格程度，越小越严格，一般取2
-    :param Q3: Q3取正整数，一般在[50,200]，越小，判断为疑似copy-move的块数越多，相应地准确度也会变低，过大时对于较小的copy-move伪造块可能无法找到，对于存在旋转、放缩等的伪造图，应减小Q3
+    :param Q2: Q2取(0,+inf)，代表对判断两个特征向量相似性的严格程度，越小越严格，一般取0.5
+    :param Q3: Q3取正整数，一般在[20,100]，越小，判断为疑似copy-move的块数越多，相应地准确度也会变低，过大时对于较小的copy-move伪造块可能无法找到
     :param Q4: Q4取不小于1.5的浮点数，当伪造图完全为平移时可取1.5，若取1.5时效果不好，视程度增大
     :return: list[tuple]，有效点构成的列表
     """
@@ -35,7 +35,6 @@ def get_feature(matrix: np.ndarray, Q1: float, Q2: float, Q3: int, Q4: float):
             continue
         if dif_of_vec(vec_arr[i - 1]["vec"], vec_arr[i]["vec"]) > Q2:
             continue
-
         tmp += 1
         dis_vec_list.append([dis_vec[0], dis_vec[1]])
         if not res.__contains__(dis_vec):
@@ -158,13 +157,13 @@ def cal_module(vec: tuple) -> float:
     return pow(vec[0] ** 2 + vec[1] ** 2, 0.5)
 
 
-# 寻找最有可能的位移向量簇
+# 寻找所有位移向量或坐标簇
 def get_clusters(point_array: list, Q1: float, Q2: int) -> list:
     """
     :param point_array: list[list]，点集
     :param Q1: 表示每个点周围的半径大小
     :param Q2: 表示每个点周围的半径Q1区域内（包括自己的位置，但不包括自己）还有多少个点，它才会与这些点纳入同一聚类
-    :return: list[tuple]，最大簇的点集（去重后）
+    :return: list[list[tuple]]，若干个簇的点集（去重后）
     """
     X = np.array(point_array)
     db = skc.DBSCAN(eps=Q1, min_samples=Q2).fit(X)
@@ -175,8 +174,6 @@ def get_clusters(point_array: list, Q1: float, Q2: int) -> list:
             labels_copy.append(i)
     if len(labels_copy) == 0:
         return None
-    # max_val = max(labels_copy, key=labels_copy.count)
-    # res = X[labels == max_val]
 
     ans = []
     n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
@@ -187,11 +184,6 @@ def get_clusters(point_array: list, Q1: float, Q2: int) -> list:
             tmp.append(tuple(j))
         tmp = list(set(tmp))
         ans.append(tmp)
-
-    # ans = []
-    # for i in res:
-    #     ans.append(tuple(i))
-    # ans = list(set(ans))
     return ans
 
 

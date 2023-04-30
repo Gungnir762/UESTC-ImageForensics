@@ -59,8 +59,8 @@ def get_img_masked_and_bin(img, relative_block_list):
     for point in relative_block_list:
         for i in range(8):
             for j in range(8):
-                img_masked[point[0] + i][point[1] + j] = 0
-                img_bin[point[0] + i][point[1] + j] = 0
+                img_masked[point[0] + i][point[1] + j] = 0  # 替换原图像素
+                img_bin[point[0] + i][point[1] + j] = 0  # 替换空白图片像素
     return img_masked, img_bin
 
 
@@ -75,7 +75,7 @@ if __name__ == '__main__':
     dct_block = get_dct_block(img_block)
     quantified_block = quantify_dct_block(dct_block, 0.01)
 
-    relative_block_list = get_feature(quantified_block, 0.02, 0.5, 50, 1.5)
+    relative_block_list = get_feature(quantified_block, 0.02, 0.5, 20, 1.5)
     if relative_block_list == None:
         print("未找到copy-move伪造块，进程退出")
         print(f'耗时：{time.time() - start}')
