@@ -1,11 +1,50 @@
-# 按DCT判断相似度
+"""
+author:zyr
+function:对图片进行切分，计算DCT变换，提取特征
+notice:None
+"""
 import time
-
 import cv2
+import io
 import numpy as np
-
 from getFeature import get_feature
-from divide import divide2block
+
+
+# 按像素点分为(M-b+1)*(N-b+1)个8*8的矩阵块，本问题中为（505，505）
+def divide2block(img: np.ndarray, step=8) -> np.ndarray:
+    """
+    :param img: 原图像
+    :param step: 步长
+    :return: 长，宽均为img.shape-(step,step)的矩阵，且每个元素为8*8的矩阵
+    """
+
+    def create_matrix(matrix: np.ndarray, row, col, step=8) -> np.ndarray:
+        """
+        :param matrix: 原矩阵
+        :param row: 开始时分块8*8矩阵在原矩阵中的X坐标
+        :param col: 开始时分块8*8矩阵在原矩阵中的Y坐标
+        :param step: 步长
+        :return: 创建好的8*8矩阵
+        """
+        temp = np.zeros((step, step), dtype=int)
+        for i, m in zip(range(step), range(row, row + step)):
+            for j, n in zip(range(step), range(col, col + step)):
+                # print(matrix[m][n])
+                temp[i][j] = matrix[m][n]
+        return temp
+
+    r, c = img.shape
+    r_block = r - step + 1
+    c_block = c - step + 1
+    img_block = np.zeros((r_block, c_block), dtype=np.ndarray)
+
+    # 按8*8的矩阵分块
+    for i in range(r_block):
+        for j in range(c_block):
+            # print(i, j)
+            img_block[i][j] = create_matrix(img, i, j, step)
+            # print(img_block[i][j])
+    return img_block
 
 
 # 计算矩阵的DCT变换
@@ -28,7 +67,6 @@ def get_dct_block(img_block: np.ndarray) -> np.ndarray:
     return dct_block
 
 
-# 简单DCT量化
 def quantify_dct_block(dct_block: np.ndarray, Q: float) -> np.ndarray:
     """
     :param dct_block: 以DCT变换后的8*8矩阵为元素的二维矩阵
@@ -53,23 +91,12 @@ def quantify_dct_block(dct_block: np.ndarray, Q: float) -> np.ndarray:
     return dct_block_int
 
 
-def get_img_masked_and_bin(img, relative_block_list):
-    img_masked = img.copy()
-    img_bin = np.ones(img.shape, dtype=np.uint8) * 255
-    for point in relative_block_list:
-        for i in range(8):
-            for j in range(8):
-                img_masked[point[0] + i][point[1] + j] = 0
-                img_bin[point[0] + i][point[1] + j] = 0
-    return img_masked, img_bin
-
-
-if __name__ == '__main__':
-    # image_path = './data/006_F.png'
-    image_path = input("请输入图片文件路径：")
+def get_img_bin_io(img_bio: [io.BytesIO]) -> [io.BytesIO]:
     start = time.time()
     # 按灰度值读取
-    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    # img = cv2.imread(img_bio, cv2.IMREAD_GRAYSCALE)
+    img_np = np.frombuffer(img_bio, dtype=np.uint8)
+    img = cv2.imdecode(img_np, cv2.IMREAD_GRAYSCALE)
 
     img_block = divide2block(img)
     dct_block = get_dct_block(img_block)
@@ -81,11 +108,36 @@ if __name__ == '__main__':
         print(f'耗时：{time.time() - start}')
         exit(0)
 
-    img_masked, img_bin = get_img_masked_and_bin(img, relative_block_list)
+    img_bin = np.ones(img.shape, dtype=np.uint8) * 255
+    for point in relative_block_list:
+        for i in range(8):
+            for j in range(8):
+                img_bin[point[0] + i][point[1] + j] = 0
 
     print(f'耗时：{time.time() - start}')
+    img_bytes = cv2.imencode(".png", img_bin)[1]
+    bytes_io = io.BytesIO(img_bytes)
 
-    tmp = np.hstack((img, img_masked, img_bin))
+    # img_bytes = cv2.imencode(".png", img)[1]
+    # bytes_io = io.BytesIO(img_bytes)
+    return bytes_io
+
+
+if __name__ == '__main__':
+    image_path = './data/015_F.png'
+    # image_path = input("请输入图片文件路径：")
+    start = time.time()
+    # 按灰度值读取
+    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+
+    img_bytes = cv2.imencode(".png", img)[1]
+    bytes_io = io.BytesIO(img_bytes)
+
+    img_bio = get_img_bin_io(bytes_io)
+    img_np = np.frombuffer(img_bio.getvalue(), dtype=np.uint8)
+    img_bin = cv2.imdecode(img_np, cv2.IMREAD_GRAYSCALE)
+
+    tmp = np.hstack((img, img_bin))
     cv2.namedWindow("Image")
     cv2.imshow("Image", tmp)
     cv2.waitKey(0)
